@@ -483,6 +483,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
   <!-- Supabase library -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
+window.onerror = function(msg, url, line, col, error) {
+  alert("ERROR:\n" + msg + "\nLine: " + line);
+};
+  
 <!-- YOUR MAIN SCRIPT -->
 <script>
 const SUPABASE_URL = "https://iycjgjbcpggcpmwznrbg.supabase.co";
