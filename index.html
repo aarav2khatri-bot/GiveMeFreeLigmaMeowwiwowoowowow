@@ -480,9 +480,46 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
   </div>
 </div>
 
-<script>
-const ADMIN_PW='MeowGopGop';
+  <!-- Supabase library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
+<!-- YOUR MAIN SCRIPT -->
+<script>
+const SUPABASE_URL = "https://iycjgjbcpggcpmwznrbg.supabase.co";
+const SUPABASE_KEY = "sb_publishable_lG_ehq4-aYShkeVRhhwcrA_O1V0I1Gm";
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  async function addPlayer(){
+  const name=document.getElementById('aU').value.trim();
+  const gm=document.getElementById('aGM').value;
+  const tier=document.getElementById('aTr').value;
+  const ptsVal=document.getElementById('aPts').value;
+  const pts=ptsVal!==''?parseInt(ptsVal):(TIER_PTS[tier]||0);
+  const region=document.getElementById('aReg').value.trim()||'NA';
+  const face=document.getElementById('aFaceUrl').value.trim();
+
+  if(!name||!gm){
+    notify('Fill in username and gamemode.',true);
+    return;
+  }
+
+  const { error } = await supabase.from('players').insert([{
+    name, gm, tier, pts, region, face
+  }]);
+
+  if(error){
+    console.error(error);
+    notify('Error adding player', true);
+    return;
+  }
+
+  loadPlayers();
+  notify(`${name} added!`);
+  }
+
+// your existing code continues...
+const ADMIN_PW='MeowGopGop';
 const GMS=[
   {id:'nethpot', name:'NethPot',    icon:'🧪', desc:'Nether Potion PvP — fast-paced, requires precise potion timing and aggression control.'},
   {id:'sword',   name:'Sword',      icon:'⚔️', desc:'Classic sword combat — combos, critical hits, and mechanical timing define the best.'},
@@ -493,6 +530,7 @@ const GMS=[
   {id:'mace',    name:'Mace',       icon:'🔨', desc:'Mace PvP (1.21+) — new weapon with unique fall-damage and knockback mechanics.'},
   {id:'axe',     name:'Axe',        icon:'🪓', desc:'Axe PvP — shield breaking, critical hits, and powerful burst damage.'},
 ];
+</script>
 
 const RANKS=[
   {key:'grandmaster',label:'Combat Grandmaster',min:161,max:Infinity,cls:'rb-grandmaster',card:'rc-grandmaster',icon:'👑',color:'#ffd166',desc:'The absolute pinnacle — 161+ pts. Feared by everyone, surpassed by none.'},
@@ -748,20 +786,40 @@ function renderASubs(){
   </tr>`).join(''):'<tr><td colspan="5" style="text-align:center;padding:1.5rem;color:var(--text3)">No pending submissions</td></tr>';
 }
 
-function addPlayer(){
-  const name=document.getElementById('aU').value.trim();
-  const gm=document.getElementById('aGM').value;
-  const tier=document.getElementById('aTr').value;
-  const ptsVal=document.getElementById('aPts').value;
-  const pts=ptsVal!==''?parseInt(ptsVal):(TIER_PTS[tier]||0);
-  const region=document.getElementById('aReg').value.trim()||'NA';
-  const face=document.getElementById('aFaceUrl').value.trim();
-  if(!name||!gm){notify('Fill in username and gamemode.',true);return;}
-  players.push({id:nextId++,name,gm,tier,pts,region,face});
-  document.getElementById('aU').value='';document.getElementById('aPts').value='';
-  document.getElementById('aReg').value='';document.getElementById('aFaceUrl').value='';
-  renderAdmin();notify(`${name} added to ${tier} Tier!`);
+  async function addPlayer(){
+  const name = document.getElementById('aU').value.trim();
+  const gm = document.getElementById('aGM').value;
+  const tier = document.getElementById('aTr').value;
+  const ptsVal = document.getElementById('aPts').value;
+
+  const pts = ptsVal !== '' ? parseInt(ptsVal) : (TIER_PTS[tier] || 0);
+  const region = document.getElementById('aReg').value.trim() || 'NA';
+  const face = document.getElementById('aFaceUrl').value.trim();
+
+  if(!name || !gm){
+    notify('Fill in username and gamemode.', true);
+    return;
+  }
+
+  const { error } = await supabase.from('players').insert([{
+    name,
+    gm,
+    tier,
+    pts,
+    region,
+    face
+  }]);
+
+  if(error){
+    console.error(error);
+    notify('Error adding player', true);
+    return;
+  }
+
+  loadPlayers(); // 🔥 refresh from database
+  notify(`${name} added globally!`);
 }
+  
 
 function editP(id){
   const p=players.find(x=>x.id===id);if(!p)return;
@@ -809,12 +867,12 @@ function notify(msg,err=false){
 document.getElementById('loginOv').addEventListener('click',function(e){if(e.target===this)closeLogin()});
 document.getElementById('profOv').addEventListener('click',function(e){if(e.target===this)this.classList.remove('active')});
 
-// INIT
-initGMs();
-initLBFilters();
-renderRanks();
-renderTiers();
-renderLB();
+  window.onload = () => {
+  initGMs();
+  initLBFilters();
+  renderRanks();
+  loadPlayers(); // 🔥 loads from Supabase
+};
 </script>
 </body>
 </html>
